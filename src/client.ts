@@ -4,8 +4,8 @@ import { OpenAPIV3 } from "openapi-types";
 import { IHashMapGeneric } from "./types";
 
 export default class Client {
-  base_url: URL;
-  common_headers: IHashMapGeneric<string>;
+  base_url: string;
+  headers: IHashMapGeneric<string>;
 
   constructor({
     schema,
@@ -21,8 +21,8 @@ export default class Client {
       base_url = schema.servers[0].url;
     }
 
-    this.base_url = new URL(base_url);
-    this.common_headers = headers;
+    this.base_url = base_url;
+    this.headers = headers;
   }
 
   async makeRequest(
@@ -32,7 +32,8 @@ export default class Client {
     params: IHashMapGeneric<string>
   ): Promise<any> {
     const pathFormated = this.replacePathVariables(path, params);
-    const url = new URL(pathFormated, this.base_url);
+    // const url = new URL(pathFormated, this.base_url);
+    const url = `${this.base_url}${pathFormated}`;
 
     const requestHeaders = {
       ...headers,
@@ -55,7 +56,10 @@ export default class Client {
       try {
         parsedData = await response.json();
       } catch {
-        parsedData = await response.text();
+        parsedData = {
+          statusCode: response.status,
+          message: response.statusText,
+        };
       }
 
       return parsedData;

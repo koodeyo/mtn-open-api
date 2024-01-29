@@ -9,8 +9,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "generate": "ts-node generate.ts",
+    "build": "yarn generate && tsup",
+    "generate": "ts-node code-generator.ts",
     "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
   },
   "repository": {

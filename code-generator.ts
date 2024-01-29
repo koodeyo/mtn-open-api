@@ -48,14 +48,17 @@ class CodeGenerator {
     return camelCaseWords.join("");
   }
 
-  private static getFunctions(schema: OpenAPIV3.Document) {
+  // Method definitions
+  private static methodDefinitions(schema: OpenAPIV3.Document) {
     let output = "";
 
     Object.entries(schema.paths).forEach(([path, methods]) => {
+      // @ts-ignore
       Object.entries(methods).forEach(([httpMethod, details]) => {
         const Tdetails = details as {
           operationId: string;
           description: string;
+          parameters: (OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject)[];
         };
 
         const operationId: string =
@@ -64,19 +67,21 @@ class CodeGenerator {
         // Remove non-word characters (including "-") and convert to camel case
         const methodName = this.toCamelCase(operationId);
 
-        // Define class functions
+        // Define class methods
         output += `
         /**
         * ${Tdetails.description}
         */
         ${methodName}(params: IHashMapGeneric<string> = {}, headers: IHashMapGeneric<string> = {}){
-          headers = {...this.common_headers, ...headers}
+          headers = {...this.headers, ...headers}
 
-          const details: OpenAPIV3.OperationObject = ${JSON.stringify(details)}
+          const details = ${JSON.stringify({
+            parameters: Tdetails.parameters,
+          })} as OpenAPIV3.OperationObject
 
           this.validateParameters("${httpMethod}", "${path}", headers, params, details)
 
-          this.makeRequest("${httpMethod}", "${path}", headers, params)
+          return this.makeRequest("${httpMethod}", "${path}", headers, params)
         }\n\n`;
       });
     });
@@ -84,36 +89,42 @@ class CodeGenerator {
     return output;
   }
 
-  static generateIndexFile() {
+  static classDefinitions() {
     const schemas = this.schemas;
 
-    const code = `
+    return `
   import { OpenAPIV3 } from "openapi-types";
   import { IHashMapGeneric } from "../src/types";
   import Client from "../src/client";
 
-  // Mtn Open API
+  /**
+   * Mtn Open Api
+   * Visit https://momodeveloper.mtn.com/ for documentation
+   */
   namespace MtnOpenApi {
     ${schemas
       .map(
         (schema) => `
+      const ${schema.namespace}Scheam: OpenAPIV3.Document = ${JSON.stringify(schema.content)}
       /**
       * ${schema.content.info.description}
       */
       export class ${schema.namespace} extends Client {
         constructor({
-          schema,
-          base_url = "${schema.content.servers[0].url}",
+          schema = ${schema.namespace}Scheam,
+          base_url = "${
+            schema.content.servers ? schema.content.servers[0].url : ""
+          }",
           headers = {},
         }: {
           base_url?: string;
           schema?: OpenAPIV3.Document;
           headers?: IHashMapGeneric<string>;
-        }) {
+        } = {}) {
           super({ schema, base_url, headers });
         }
 
-        ${this.getFunctions(schema.content)}
+        ${this.methodDefinitions(schema.content)}
       }
       `
       )
@@ -127,7 +138,9 @@ class CodeGenerator {
 
   export default MtnOpenApi;
     `;
+  }
 
+  static generateIndexFile() {
     // Write code to file
     const folderPath = "./generated";
     const filePath = path.join(folderPath, "index.ts");
@@ -138,7 +151,7 @@ class CodeGenerator {
     }
 
     // Write the file
-    fs.writeFileSync(filePath, code, "utf8");
+    fs.writeFileSync(filePath, this.classDefinitions(), "utf8");
   }
 }
 
