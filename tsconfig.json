@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "lib": ["es2018"],
-    "target": "es2018",
+    "lib": ["es2022"],
+    "target": "ES2022",
     "module": "commonjs",
     "moduleResolution": "node",
     "outDir": "./dist",
@@ -11,6 +11,6 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*.ts", "index.js"],
+  "include": ["src/**/*.ts", "index.js", "generate.ts"],
   "exclude": ["node_modules"]
 }

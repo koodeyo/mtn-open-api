@@ -1,18 +1,19 @@
 import fetch, { Response, RequestInit, FetchError } from "node-fetch";
+import * as jsonschema from "jsonschema";
 import { OpenAPIV3 } from "openapi-types";
 import { IHashMapGeneric } from "./types";
 
 export default class Client {
   base_url: URL;
-  common_headers: Record<string, string>;
+  common_headers: IHashMapGeneric<string>;
 
   constructor({
     schema,
     base_url = "",
     headers = {},
   }: {
-    schema?: OpenAPIV3.Document;
     base_url?: string;
+    schema?: OpenAPIV3.Document;
     headers?: IHashMapGeneric<string>;
   } = {}) {
     // Set default BaseURL
@@ -30,8 +31,8 @@ export default class Client {
     headers: IHashMapGeneric<string>,
     params: IHashMapGeneric<string>
   ): Promise<any> {
-    const url = new URL(path, this.base_url);
-    // url.search = new URLSearchParams(params).toString();
+    const pathFormated = this.replacePathVariables(path, params);
+    const url = new URL(pathFormated, this.base_url);
 
     const requestHeaders = {
       ...headers,
@@ -66,31 +67,67 @@ export default class Client {
       throw error;
     }
   }
-  private validateParameters(
+
+  validateParameters(
     httpMethod: string,
     path: string,
     headers: IHashMapGeneric<string>,
     params: IHashMapGeneric<string>,
     operationDetails: OpenAPIV3.OperationObject
-  ) {}
+  ) {
+    // Validate required headers
+    const requiredHeaders = (operationDetails.parameters?.filter(
+      (param: OpenAPIV3.ParameterObject) =>
+        param.in === "header" && param.required
+    ) || []) as OpenAPIV3.ParameterObject[];
+
+    this.validateRequiredParameters(headers, requiredHeaders);
+
+    // Validate required path parameters
+    const pathParams = (path.match(/{(\w+)}/g) || []).map((match) =>
+      match.slice(1, -1)
+    );
+
+    const requiredPathParams = (operationDetails.parameters?.filter(
+      (param: OpenAPIV3.ParameterObject) =>
+        param.in === "path" && pathParams.includes(param.name) && param.required
+    ) || []) as OpenAPIV3.ParameterObject[];
+
+    this.validateRequiredParameters(params, requiredPathParams);
+
+    // Validate required query parameters
+    const requiredQueryParams = (operationDetails.parameters?.filter(
+      (param: OpenAPIV3.ParameterObject) =>
+        param.in === "query" && param.required
+    ) || []) as OpenAPIV3.ParameterObject[];
+
+    this.validateRequiredParameters(params, requiredQueryParams);
+  }
 
   private validateRequiredParameters(
     data: IHashMapGeneric<string>,
     schema: OpenAPIV3.ParameterObject[]
-  ) {}
+  ) {
+    schema.forEach((paramSchema) => {
+      const paramName = paramSchema.name;
+      // Check if the parameter is present in the data
+      if (!(paramName in data)) {
+        throw new Error(`Missing required parameter: ${paramName}`);
+      }
 
-  private toCamelCase(operationId: string): string {
-    // AbCd to ab_cd
-    operationId = operationId
-      .replace(/\W/g, "_")
-      .replace(/([a-z])([A-Z])/g, "$1_$2")
-      .toLowerCase();
-    // _ -
-    const words = operationId.split(/[_-]/);
-    const camelCaseWords = words.map((w, i) =>
-      i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)
-    );
+      // Validate the parameter against the schema
+      if (!jsonschema.validate(data[paramName], paramSchema.schema).valid) {
+        throw new Error(`Invalid value for parameter: ${paramName}`);
+      }
+    });
+  }
 
-    return camelCaseWords.join("");
+  private replacePathVariables(
+    path: string,
+    params: IHashMapGeneric<string>
+  ): string {
+    // "/path/{param1}/name/{param2}"
+
+    return path.replace(/{([^{}]+)}/g, (_, variable) => params[variable]);
   }
 }

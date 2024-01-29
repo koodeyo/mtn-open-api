@@ -1,9 +1,7 @@
 import Client from "./client";
 
 namespace MtnOpenApi {
-  export class Collection extends Client {
-    // const schema: OpenAPIV3.Document = {};
-  }
+  export class Collection extends Client {}
 
   export class Disbursement extends Client {}
 
