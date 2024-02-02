@@ -1,0 +1,28 @@
+# Mtn Open Api
+Explore seamless integration with MTN Open API using this npm package. For in-depth information, refer to the official documentation at [https://momodeveloper.mtn.com/](https://momodeveloper.mtn.com/).
+
+## Key Features
+- **Full API Availability:** Access a comprehensive set of API endpoints, providing developers with a versatile toolkit to address a wide range of scenarios. The package's commitment to inclusivity ensures that all necessary API endpoints are readily available for integration.
+
+- **Robust Testing:** Every endpoint is rigorously tested to ensure reliability and stability. By adhering to best practices in testing, the `Mtn Open Api` package delivers a dependable solution that developers can trust for their projects.
+
+- **Comprehensive Documentation:** All methods are thoroughly documented, ensuring that developers have access to clear and concise information on the functionality and usage of each feature. This commitment to documentation enhances the package's usability and simplifies the integration process.
+
+## Installation
+
+Install the package and add to the application's package.json by executing:
+
+    $ npm install mtn-open-api
+
+OR
+```
+yarn add mtn-open-api
+```
+
+## Usage
+
+TODO: Write usage instructions here
+
+## Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/koodeyo/mtn-open-api.

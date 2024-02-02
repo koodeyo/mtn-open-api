@@ -33,7 +33,7 @@ class CodeGenerator {
     return YAML.load(fs.readFileSync(yamlPath, "utf8"));
   }
 
-  private static toCamelCase(operationId: string): string {
+  static toCamelCase(operationId: string): string {
     // AbCd to ab_cd
     operationId = operationId
       .replace(/\W/g, "_")
@@ -105,7 +105,9 @@ class CodeGenerator {
     ${schemas
       .map(
         (schema) => `
-      const ${schema.namespace}Scheam: OpenAPIV3.Document = ${JSON.stringify(schema.content)}
+      const ${schema.namespace}Scheam: OpenAPIV3.Document = ${JSON.stringify(
+          schema.content
+        )}
       /**
       * ${schema.content.info.description}
       */
@@ -140,7 +142,7 @@ class CodeGenerator {
     `;
   }
 
-  static generateIndexFile() {
+  static generateEntryFile() {
     // Write code to file
     const folderPath = "./generated";
     const filePath = path.join(folderPath, "index.ts");
@@ -155,4 +157,9 @@ class CodeGenerator {
   }
 }
 
-CodeGenerator.generateIndexFile();
+export default CodeGenerator;
+
+// Generate Generate Entry File
+if (process.argv[2] === "--generate-index") {
+  CodeGenerator.generateEntryFile();
+}
