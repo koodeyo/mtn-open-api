@@ -96,7 +96,7 @@ function apiDocs() {
       null,
       extraHeaders.length > 0 ? 2 : 0
     )};\n\n`;
-    output += `const response = ${instanceName}.${CodeGenerator.toCamelCase(
+    output += `const response = await ${instanceName}.${CodeGenerator.toCamelCase(
       sampleMethod.operationId
     )}(params, extraHeaders);\n\`\`\``;
 

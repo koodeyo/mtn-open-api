@@ -55,7 +55,7 @@ const extraHeaders = {
   "X-Reference-Id": "string"
 };
 
-const response = sandboxprovisioning.postV10Apiuser(params, extraHeaders);
+const response = await sandboxprovisioning.postV10Apiuser(params, extraHeaders);
 ```
 #### Methods
 - [postV10Apiuser](https://momodeveloper.mtn.com/API-collections#api=sandbox-provisioning-api&operation=post-v1_0-apiuser) Used to create an API user in the sandbox target environment.
@@ -104,7 +104,7 @@ const extraHeaders = {
   "X-Reference-Id": "string"
 };
 
-const response = collection.requesttoPay(params, extraHeaders);
+const response = await collection.requesttoPay(params, extraHeaders);
 ```
 #### Methods
 - [getAccountBalance](https://momodeveloper.mtn.com/API-collections#api=collection&operation=GetAccountBalance) Get the balance of own account.
@@ -160,7 +160,7 @@ const params = "login_hint=ID:{msisdn}/MSISDN&scope={scope}&access_type={online/
 
 const extraHeaders = {};
 
-const response = disbursement.bcAuthorize(params, extraHeaders);
+const response = await disbursement.bcAuthorize(params, extraHeaders);
 ```
 #### Methods
 - [getAccountBalance](https://momodeveloper.mtn.com/API-collections#api=disbursement&operation=GetAccountBalance) Get the balance of own account.
@@ -222,7 +222,7 @@ const extraHeaders = {
   "X-Reference-Id": "string"
 };
 
-const response = remittance.transfer(params, extraHeaders);
+const response = await remittance.transfer(params, extraHeaders);
 ```
 #### Methods
 - [getAccountBalance](https://momodeveloper.mtn.com/API-collections#api=remittance&operation=GetAccountBalance) Get the balance of own account.
